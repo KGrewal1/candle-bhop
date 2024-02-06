@@ -1,0 +1,5 @@
+/target
+*.st
+optim/neb.*
+optim/MLPdata
+optim_low_weight/*

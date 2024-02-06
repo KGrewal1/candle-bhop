@@ -1,0 +1,39 @@
+[workspace]
+resolver = "2"
+members = [  "bhop"
+]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace.dependencies]
+anyhow = "1.0.75"
+candle-core = { git = "https://github.com/huggingface/candle.git", version = "0.3.2"}
+candle-nn = { git = "https://github.com/huggingface/candle.git", version = "0.3.2"}
+candle-datasets ={ git = "https://github.com/huggingface/candle.git", version = "0.3.2"}
+optimisers = { package = "candle-optimisers", git = "https://github.com/KGrewal1/optimisers.git", version = "0.3.2"}
+rand = "0.8.5"
+rand_chacha = "0.3.1"
+log = "0.4.20"
+env_logger = "0.11.0"
+bhop = { path = "./bhop" }
+hf-hub = "0.3.2"
+image = "0.24.7"
+parquet = "49.0.0"
+
+[profile.release]
+# debug = true
+strip = "symbols" # minimal binary size
+lto = true # maximal LTO optimisaiton
+
+[workspace.lints.clippy]
+pedantic = "warn"
+suspicious = "warn"
+perf = "warn"
+complexity = "warn"
+style = "warn"
+# cargo = "warn"
+imprecise_flops = "warn"
+module_name_repetitions = {level =  "allow", priority = 1}
+uninlined_format_args = {level =  "allow", priority = 1}
+missing_errors_doc = {level =  "allow", priority = 1}
