@@ -18,8 +18,6 @@ pub trait SimpleModel: Sized + Model + Clone {
         test_data: Tensor,
         test_labels: Tensor,
     ) -> candle_core::Result<Self>;
-    /// Forward pass
-    fn forward(&self) -> candle_core::Result<Tensor>;
     /// Test evaluation
     fn test_eval(&self) -> candle_core::Result<f32>;
 }
