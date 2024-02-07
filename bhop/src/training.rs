@@ -12,10 +12,11 @@ pub(super) fn run_lbfgs_training<M: SimpleModel>(
     l2_norm: Option<f64>,
     lbfgs_steps: usize,
     grad_conv: GradConv,
+    history_size: usize,
 ) -> anyhow::Result<f32> {
     let params = ParamsLBFGS {
         lr: 1.,
-        history_size: 10,
+        history_size,
         line_search: Some(LineSearch::StrongWolfe(1e-4, 0.9, 1e-9)),
         step_conv: StepConv::MinStep(0.),
         grad_conv: grad_conv,

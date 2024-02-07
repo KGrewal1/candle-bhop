@@ -32,6 +32,7 @@ pub fn basin_hopping<M: SimpleModel>(
     pert_range: f64,
     lbfgs_steps: usize,
     grad_conv: GradConv,
+    history_size: usize,
 ) -> anyhow::Result<Vec<String>> {
     if !path.is_dir() {
         return Err(anyhow!("path must be a directory"));
@@ -53,7 +54,7 @@ pub fn basin_hopping<M: SimpleModel>(
         info!("Epoch {}", i);
         let name = format!("model_{:03}.st", i);
         let save_path = path.join(&name);
-        let f = run_lbfgs_training(model, &varmap, l2_reg, lbfgs_steps, grad_conv)?;
+        let f = run_lbfgs_training(model, &varmap, l2_reg, lbfgs_steps, grad_conv, history_size)?;
 
         #[allow(clippy::cast_possible_truncation)]
         let l2_fac = if let Some(reg) = l2_reg {
