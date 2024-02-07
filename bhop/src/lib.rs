@@ -10,14 +10,10 @@ use crate::training::{l2_norm, run_lbfgs_training};
 pub mod training;
 
 pub trait SimpleModel: Sized + Model + Clone {
+    type SetupVars: Sized;
+
     /// Create a new model from a variable builder and data
-    fn new(
-        vs: VarBuilder,
-        train_data: Tensor,
-        train_labels: Tensor,
-        test_data: Tensor,
-        test_labels: Tensor,
-    ) -> candle_core::Result<Self>;
+    fn new(vs: VarBuilder, setup_vars: Self::SetupVars) -> candle_core::Result<Self>;
     /// Test evaluation
     fn test_eval(&self) -> candle_core::Result<f32>;
 }
