@@ -13,7 +13,7 @@ pub trait SimpleModel: Sized + Model + Clone {
     type SetupVars: Sized;
 
     /// Create a new model from a variable builder and data
-    fn new(vs: VarBuilder, setup_vars: Self::SetupVars) -> candle_core::Result<Self>;
+    fn new(setup_vars: Self::SetupVars) -> candle_core::Result<Self>;
     /// Test evaluation
     fn test_eval(&self) -> candle_core::Result<f32>;
 }
