@@ -11,6 +11,7 @@ pub(super) fn run_lbfgs_training<M: SimpleModel>(
     varmap: &VarMap,
     l2_norm: Option<f64>,
     lbfgs_steps: usize,
+    step_conv: StepConv,
     grad_conv: GradConv,
     history_size: usize,
 ) -> anyhow::Result<f32> {
@@ -18,15 +19,15 @@ pub(super) fn run_lbfgs_training<M: SimpleModel>(
         lr: 1.,
         history_size,
         line_search: Some(LineSearch::StrongWolfe(1e-4, 0.9, 1e-9)),
-        step_conv: StepConv::MinStep(0.),
-        grad_conv: grad_conv,
+        step_conv,
+        grad_conv,
         weight_decay: l2_norm.map(|x| 2. * x), //
                                                // ..Default::default()
     };
 
     let mut loss = model.loss()?;
     info!(
-        "iniital loss: {}",
+        "initial loss: {}",
         loss.to_dtype(candle_core::DType::F32)?.to_scalar::<f32>()?
     );
 

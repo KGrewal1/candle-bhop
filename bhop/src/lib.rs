@@ -2,7 +2,10 @@ use anyhow::anyhow;
 use candle_core::{Tensor, Var};
 use candle_nn::{VarBuilder, VarMap};
 use log::info;
-use optimisers::{lbfgs::GradConv, Model};
+use optimisers::{
+    lbfgs::{GradConv, StepConv},
+    Model,
+};
 use rand::{Rng, SeedableRng};
 use std::path::Path;
 
@@ -27,6 +30,7 @@ pub fn basin_hopping<M: SimpleModel>(
     temperature: f32,
     pert_range: f64,
     lbfgs_steps: usize,
+    step_conv: StepConv,
     grad_conv: GradConv,
     history_size: usize,
 ) -> anyhow::Result<Vec<String>> {
@@ -50,7 +54,15 @@ pub fn basin_hopping<M: SimpleModel>(
         info!("Epoch {}", i);
         let name = format!("model_{:03}.st", i);
         let save_path = path.join(&name);
-        let f = run_lbfgs_training(model, &varmap, l2_reg, lbfgs_steps, grad_conv, history_size)?;
+        let f = run_lbfgs_training(
+            model,
+            &varmap,
+            l2_reg,
+            lbfgs_steps,
+            step_conv,
+            grad_conv,
+            history_size,
+        )?;
 
         #[allow(clippy::cast_possible_truncation)]
         let l2_fac = if let Some(reg) = l2_reg {
