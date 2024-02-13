@@ -55,7 +55,7 @@ pub(super) fn run_lbfgs_training<M: SimpleModel>(
                         .to_dtype(candle_core::DType::F32)?
                         .to_scalar::<f32>()?
                 );
-                info!("test acc: {:5.2}%", model.test_eval()? * 100.);
+                info!("test metric: {}", model.test_eval()?);
                 fn_evals += evals;
                 loss = new_loss;
                 converged = true;
