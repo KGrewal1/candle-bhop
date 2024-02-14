@@ -78,7 +78,7 @@ pub(super) fn run_lbfgs_training<M: SimpleModel>(
     }
     if !converged {
         info!("test acc: {:5.2}", model.test_eval()?);
-        warn!("did not converge after {} fn evals", fn_evals)
+        warn!("did not converge after {} fn evals", fn_evals);
     }
     info!(
         "loss: {}",

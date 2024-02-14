@@ -9,7 +9,6 @@ edition = "2021"
 anyhow = { workspace = true }
 candle-core = { workspace = true }
 candle-nn = { workspace = true }
-candle-datasets ={ workspace = true }
 optimisers = { workspace = true }
 rand = { workspace = true }
 rand_chacha = { workspace = true }
