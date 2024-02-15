@@ -11,18 +11,18 @@ To use this crate a rust toolchain must be installed. This can be done by follow
 There are two examples included with the crate, a multiplayer perceptron  and a convolutional autoencoder, both for MNIST.
 This can be run by
 
-```bash
+```sh
 cargo r -r --example mnist-mlp
 ```
 
 or
 
-```bash
+```sh
 cargo r -r --example autoencoder
 ```
 
 To accelerate learning, cuda support can be enabled:
 
-```bash
+```sh
 cargo r -r --example mnist-mlp --features cuda
 ```
