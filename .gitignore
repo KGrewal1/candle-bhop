@@ -3,3 +3,5 @@
 optim/neb.*
 optim/MLPdata
 optim_low_weight/*
+mlp_weights/*
+autoencoder_weights/*

@@ -1,12 +1,11 @@
-[workspace]
-resolver = "2"
-members = [  "bhop"
-]
-
+[package]
+name = "bhop"
+version = "0.1.0"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[workspace.dependencies]
+[dependencies]
 anyhow = "1.0.75"
 candle-core = {version = "0.3.2"}
 candle-nn = {version = "0.3.2"}
@@ -16,10 +15,16 @@ rand_chacha = "0.3.1"
 log = "0.4.20"
 env_logger = "0.11.0"
 
-[profile.release]
-# debug = true
-strip = "symbols" # minimal binary size
-lto = true # maximal LTO optimisaiton
+[dev-dependencies]
+anyhow = "1.0.75"
+parquet = "50.0.0"
+hf-hub = "0.3.2"
+candle-datasets = "0.3.2"
+image = "0.24.7"
+
+[features]
+default = []
+cuda = ["candle-core/cuda", "candle-nn/cuda", "optimisers/cuda"]
 
 [workspace.lints.clippy]
 pedantic = "warn"

@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use candle_core::{Tensor, Var};
 use candle_nn::{VarBuilder, VarMap};
 use log::info;
@@ -7,7 +6,7 @@ use optimisers::{
     Model,
 };
 use rand::{Rng, SeedableRng};
-use std::path::Path;
+use std::{fs, path::Path};
 
 use crate::training::{l2_norm, run_lbfgs_training};
 pub mod training;
@@ -34,8 +33,15 @@ pub fn basin_hopping<M: SimpleModel>(
     grad_conv: GradConv,
     history_size: usize,
 ) -> anyhow::Result<Vec<String>> {
-    if !path.is_dir() {
-        return Err(anyhow!("path must be a directory"));
+    if path.exists() {
+        if !path.is_dir() {
+            anyhow::bail!(
+                "Path {} exists and is not a directory",
+                path.to_string_lossy()
+            );
+        }
+    } else {
+        fs::create_dir_all(path)?;
     }
 
     let mut min_loss = f32::INFINITY;
