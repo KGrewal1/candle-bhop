@@ -1,3 +1,7 @@
+/*!
+ Basin Hopping optimisation for use with the candle machine learning framework
+*/
+
 use candle_core::{Tensor, Var};
 use candle_nn::{VarBuilder, VarMap};
 use log::info;
@@ -11,6 +15,9 @@ use std::{fs, path::Path};
 use crate::training::{l2_norm, run_lbfgs_training};
 pub mod training;
 
+/// Trait needed for the model to be used in the basin hopping optimisation
+/// Requires a new function to create a new model from a variable builder and data
+/// and a test evaluation function
 pub trait SimpleModel: Sized + Model + Clone {
     type SetupVars: Sized;
 
@@ -20,19 +27,36 @@ pub trait SimpleModel: Sized + Model + Clone {
     fn test_eval(&self) -> candle_core::Result<f32>;
 }
 
+/// test
+pub struct BhopConfig {
+    /// the number of basin hopping steps
+    pub steps: usize,
+    /// the temperature for the MC criterion
+    pub temperature: f64,
+    /// The size of each basin hopping step
+    pub step_size: f64,
+    /// The number of lbfgs steps
+    pub lbfgs_steps: usize,
+    /// The step convergence criterion
+    pub step_conv: StepConv,
+    /// The gradient convergence criterion
+    pub grad_conv: GradConv,
+    /// The history size for the lbfgs optimiser
+    pub history_size: usize,
+    /// The L2 regularisation factor
+    pub l2_reg: Option<f64>,
+    /// The random seed to be used for the Monte Carlo eval
+    pub seed: u64,
+}
+
 /// Run basin hopping global minimisation
-pub fn basin_hopping<M: SimpleModel>(
+pub fn basin_hopping<M: SimpleModel, P: AsRef<Path>>(
     model: &M,
     mut varmap: VarMap,
-    l2_reg: Option<f64>,
-    path: &Path,
-    temperature: f32,
-    pert_range: f64,
-    lbfgs_steps: usize,
-    step_conv: StepConv,
-    grad_conv: GradConv,
-    history_size: usize,
+    path: P,
+    config: BhopConfig,
 ) -> anyhow::Result<Vec<String>> {
+    let path: &Path = path.as_ref();
     if path.exists() {
         if !path.is_dir() {
             anyhow::bail!(
@@ -44,35 +68,31 @@ pub fn basin_hopping<M: SimpleModel>(
         fs::create_dir_all(path)?;
     }
 
-    let mut min_loss = f32::INFINITY;
+    let mut min_loss = f64::INFINITY;
     let mut min_name = " ".to_string();
     let mut names: Vec<String> = Vec::new();
 
-    let mut current_loss = f32::INFINITY;
+    let mut current_loss = f64::INFINITY;
     let mut current_name = " ".to_string();
-    let mut rng = rand_chacha::ChaCha8Rng::from_seed([46; 32]);
-    // panic!("n: {}", n);
+    let mut rng = rand_xoshiro::Xoshiro256StarStar::seed_from_u64(config.seed);
 
-    // let (model, mut varmap) = setup_lbfgs_training::<M>(&m)?;
-
-    // let temperature = 1.;
-    for i in 0..100 {
+    for i in 0..config.steps {
         info!("Epoch {}", i);
         let name = format!("model_{:03}.st", i);
         let save_path = path.join(&name);
         let f = run_lbfgs_training(
             model,
             &varmap,
-            l2_reg,
-            lbfgs_steps,
-            step_conv,
-            grad_conv,
-            history_size,
+            config.l2_reg,
+            config.lbfgs_steps,
+            config.step_conv,
+            config.grad_conv,
+            config.history_size,
         )?;
 
         #[allow(clippy::cast_possible_truncation)]
-        let l2_fac = if let Some(reg) = l2_reg {
-            (l2_norm(&varmap.all_vars())? * reg) as f32
+        let l2_fac = if let Some(reg) = config.l2_reg {
+            (l2_norm(&varmap.all_vars())? * reg) as f64
         } else {
             0.
         };
@@ -104,8 +124,8 @@ pub fn basin_hopping<M: SimpleModel>(
             current_name = name.clone();
         } else {
             let delta = f + l2_fac - current_loss;
-            let p = (-delta / temperature).exp(); // T = temp in units of Kb so P = exp(-delta/T)
-            let n = rng.gen_range(0_f32..1.);
+            let p = (-delta / config.temperature).exp(); // T = temp in units of Kb so P = exp(-delta/T)
+            let n = rng.gen_range(0_f64..1.);
             if n < p {
                 info!("STEP: accepted MH, from {} to {}", current_loss, f + l2_fac);
                 current_loss = f + l2_fac;
@@ -122,7 +142,7 @@ pub fn basin_hopping<M: SimpleModel>(
             }
         }
         names.push(name);
-        perturb(&mut varmap.all_vars(), pert_range)?;
+        perturb(&mut varmap.all_vars(), config.step_size)?;
     }
     info!("final min loss: {}", min_loss);
     info!("final min name: {}\n", min_name);

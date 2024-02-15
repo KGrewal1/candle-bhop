@@ -1,8 +1,8 @@
 use anyhow::Result;
+use bhop::BhopConfig;
 use candle_core::DType;
 use env_logger::Builder;
 use log::LevelFilter;
-use std::path::Path;
 use training::setup_training;
 
 mod load_mnist;
@@ -24,18 +24,19 @@ fn main() -> Result<()> {
     let pert_range = 0.1;
     let lbfgs_steps = 20_000;
 
-    let _names = bhop::basin_hopping(
-        &model,
-        varmap,
-        l2_reg,
-        Path::new("autoencoder_weights"),
+    let config = BhopConfig {
+        steps: 100,
         temperature,
-        pert_range,
+        step_size: pert_range,
         lbfgs_steps,
-        optimisers::lbfgs::StepConv::MinStep(0.),
-        optimisers::lbfgs::GradConv::MinForce(1e-3),
-        10,
-    )?;
+        step_conv: optimisers::lbfgs::StepConv::MinStep(0.),
+        grad_conv: optimisers::lbfgs::GradConv::MinForce(1e-3),
+        history_size: 10,
+        l2_reg,
+        seed: 42,
+    };
+
+    let _names = bhop::basin_hopping(&model, varmap, "autoencoder_weights", config)?;
 
     Ok(())
 }

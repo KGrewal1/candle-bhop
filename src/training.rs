@@ -14,7 +14,7 @@ pub(super) fn run_lbfgs_training<M: SimpleModel>(
     step_conv: StepConv,
     grad_conv: GradConv,
     history_size: usize,
-) -> anyhow::Result<f32> {
+) -> anyhow::Result<f64> {
     let params = ParamsLBFGS {
         lr: 1.,
         history_size,
@@ -28,7 +28,7 @@ pub(super) fn run_lbfgs_training<M: SimpleModel>(
     let mut loss = model.loss()?;
     info!(
         "initial loss: {}",
-        loss.to_dtype(candle_core::DType::F32)?.to_scalar::<f32>()?
+        loss.to_dtype(candle_core::DType::F64)?.to_scalar::<f64>()?
     );
 
     // create an optimiser
@@ -52,8 +52,8 @@ pub(super) fn run_lbfgs_training<M: SimpleModel>(
                 info!(
                     "loss: {}",
                     new_loss
-                        .to_dtype(candle_core::DType::F32)?
-                        .to_scalar::<f32>()?
+                        .to_dtype(candle_core::DType::F64)?
+                        .to_scalar::<f64>()?
                 );
                 info!("test metric: {}", model.test_eval()?);
                 fn_evals += evals;
@@ -82,10 +82,10 @@ pub(super) fn run_lbfgs_training<M: SimpleModel>(
     }
     info!(
         "loss: {}",
-        loss.to_dtype(candle_core::DType::F32)?.to_scalar::<f32>()?
+        loss.to_dtype(candle_core::DType::F64)?.to_scalar::<f64>()?
     );
     info!("{} fn evals", fn_evals);
-    Ok(loss.to_dtype(candle_core::DType::F32)?.to_scalar::<f32>()?)
+    Ok(loss.to_dtype(candle_core::DType::F64)?.to_scalar::<f64>()?)
 }
 
 pub(super) fn l2_norm(vs: &[Var]) -> candle_core::Result<f64> {

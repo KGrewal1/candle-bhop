@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use bhop::BhopConfig;
 use candle_core::Result as CResult;
 use candle_datasets::vision::Dataset;
 use env_logger::Builder;
@@ -30,18 +31,19 @@ fn main() -> Result<()> {
     let pert_range = 1.;
     let lbfgs_steps = 200_000;
 
-    let names = bhop::basin_hopping(
-        &model,
-        varmap,
-        l2_reg,
-        Path::new("new_weights"),
+    let config = BhopConfig {
+        steps: 100,
         temperature,
-        pert_range,
+        step_size: pert_range,
         lbfgs_steps,
-        optimisers::lbfgs::StepConv::MinStep(0.),
-        optimisers::lbfgs::GradConv::MinForce(1e-4),
-        10,
-    )?;
+        step_conv: optimisers::lbfgs::StepConv::MinStep(0.),
+        grad_conv: optimisers::lbfgs::GradConv::MinForce(1e-4),
+        history_size: 10,
+        l2_reg,
+        seed: 42,
+    };
+
+    let names = bhop::basin_hopping(&model, varmap, "mlp_weights", config)?;
 
     for name in &names {
         for name2 in &names {
