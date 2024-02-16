@@ -26,8 +26,8 @@ pub struct MySetupVars {
 impl SimpleModel for Mlp {
     type SetupVars = MySetupVars;
     fn new(vs: VarBuilder, setup: MySetupVars) -> Result<Self> {
-        let ln1 = candle_nn::linear(IMAGE_DIM, 10, vs.pp("ln1"))?;
-        let ln2 = candle_nn::linear(10, LABELS, vs.pp("ln2"))?;
+        let ln1 = candle_nn::linear(IMAGE_DIM, 100, vs.pp("ln1"))?;
+        let ln2 = candle_nn::linear(100, LABELS, vs.pp("ln2"))?;
         Ok(Self {
             ln1,
             ln2,

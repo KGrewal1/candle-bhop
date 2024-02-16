@@ -1,7 +1,7 @@
 use candle_core::Var;
 use candle_nn::VarMap;
 use log::{debug, info, warn};
-use optimisers::lbfgs::{GradConv, Lbfgs, LineSearch, ParamsLBFGS, StepConv};
+use optimisers::lbfgs::{Lbfgs, ParamsLBFGS};
 use optimisers::LossOptimizer;
 
 use crate::SimpleModel;
@@ -9,22 +9,9 @@ use crate::SimpleModel;
 pub(super) fn run_lbfgs_training<M: SimpleModel>(
     model: &M,
     varmap: &VarMap,
-    l2_norm: Option<f64>,
+    params: ParamsLBFGS,
     lbfgs_steps: usize,
-    step_conv: StepConv,
-    grad_conv: GradConv,
-    history_size: usize,
 ) -> anyhow::Result<f64> {
-    let params = ParamsLBFGS {
-        lr: 1.,
-        history_size,
-        line_search: Some(LineSearch::StrongWolfe(1e-4, 0.9, 1e-9)),
-        step_conv,
-        grad_conv,
-        weight_decay: l2_norm.map(|x| 2. * x), //
-                                               // ..Default::default()
-    };
-
     let mut loss = model.loss()?;
     info!(
         "initial loss: {}",
@@ -37,13 +24,6 @@ pub(super) fn run_lbfgs_training<M: SimpleModel>(
     let mut converged = false;
 
     for step in 0..lbfgs_steps {
-        // if step % 1000 == 0 {
-        //     info!("step: {}", step);
-        //     info!("loss: {}", loss.to_scalar::<f32>()?);
-        //     info!("test acc: {:5.2}%", model.test_eval()? * 100.);
-        // }
-        // get the loss
-
         // step the tensors by backpropagating the loss
         let res = optimiser.backward_step(&loss)?;
         match res {

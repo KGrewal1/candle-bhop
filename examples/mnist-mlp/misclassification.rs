@@ -5,21 +5,25 @@ use candle_core::{DType, Tensor, D};
 use candle_nn::{VarBuilder, VarMap};
 use log::info;
 
-use crate::models::{Forward, Mlp};
+use crate::{
+    load_mnist,
+    models::{Forward, Mlp},
+};
 
-pub fn perturbed_misclassification(
-    m: &candle_datasets::vision::Dataset,
+pub fn perturbed_misclassification<P: AsRef<Path>>(
+    // m: &candle_datasets::vision::Dataset,
     weight_path_a: &str,
     weight_path_b: &str,
-    path: &Path,
+    path: P,
 ) -> anyhow::Result<()> {
+    let path: &Path = path.as_ref();
     // check to see if cuda device availabke
     let dev = candle_core::Device::cuda_if_available(0)?;
     // println!("Training on device {dev:?}");
-
+    let (train_images, train_labels, _test_images, _test_labels) = load_mnist::load_mnist()?;
     // load the test images
-    let train_images = m.train_images.to_device(&dev)?.to_device(&dev)?;
-    let train_labels = m.train_labels.to_dtype(DType::U32)?.to_device(&dev)?;
+    let train_images = train_images.to_device(&dev)?.to_device(&dev)?;
+    let train_labels = train_labels.to_dtype(DType::U32)?.to_device(&dev)?;
     let random_data = Tensor::randn_like(&train_images, 0., 1.)?;
     // let random_data = (random_data + &train_images)?.clamp(0., 255.)?;
 
@@ -35,6 +39,7 @@ pub fn perturbed_misclassification(
         test_data: train_images.clone(),
         test_labels: train_labels.clone(),
     };
+
     let model_a = Mlp::new(vs_a.clone(), setup)?;
 
     // info!("loading weights from {weight_path_a}");

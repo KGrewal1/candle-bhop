@@ -6,7 +6,7 @@ use candle_core::{Tensor, Var};
 use candle_nn::{VarBuilder, VarMap};
 use log::info;
 use optimisers::{
-    lbfgs::{GradConv, StepConv},
+    lbfgs::{GradConv, LineSearch, ParamsLBFGS, StepConv},
     Model,
 };
 use rand::{Rng, SeedableRng};
@@ -45,6 +45,8 @@ pub struct BhopConfig {
     pub history_size: usize,
     /// The L2 regularisation factor
     pub l2_reg: Option<f64>,
+    /// the line search method
+    pub linesearch: Option<LineSearch>,
     /// The random seed to be used for the Monte Carlo eval
     pub seed: u64,
 }
@@ -80,15 +82,15 @@ pub fn basin_hopping<M: SimpleModel, P: AsRef<Path>>(
         info!("Epoch {}", i);
         let name = format!("model_{:03}.st", i);
         let save_path = path.join(&name);
-        let f = run_lbfgs_training(
-            model,
-            &varmap,
-            config.l2_reg,
-            config.lbfgs_steps,
-            config.step_conv,
-            config.grad_conv,
-            config.history_size,
-        )?;
+        let lbfgs_params = ParamsLBFGS {
+            lr: 1.,
+            history_size: config.history_size,
+            line_search: config.linesearch,
+            step_conv: config.step_conv,
+            grad_conv: config.grad_conv,
+            weight_decay: config.l2_reg.map(|x| 2. * x),
+        };
+        let f = run_lbfgs_training(model, &varmap, lbfgs_params, config.lbfgs_steps)?;
 
         #[allow(clippy::cast_possible_truncation)]
         let l2_fac = if let Some(reg) = config.l2_reg {
