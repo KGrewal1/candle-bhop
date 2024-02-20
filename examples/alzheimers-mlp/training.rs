@@ -3,7 +3,7 @@ use candle_core::DType;
 use candle_nn::{VarBuilder, VarMap};
 use log::info;
 const NIMAGES: usize = 2048;
-use crate::{load_mnist, models::Mlp, DATATYPE};
+use crate::{load_dataset, models::Mlp, DATATYPE};
 
 pub fn setup_training() -> anyhow::Result<(Mlp, VarMap)> {
     // check to see if cuda device availabke
@@ -11,7 +11,7 @@ pub fn setup_training() -> anyhow::Result<(Mlp, VarMap)> {
     info!("Training on device {dev:?}");
     // dev.set_seed(0)?;
 
-    let (train_images, train_labels, test_images, test_labels) = load_mnist::load_mnist()?;
+    let (train_images, train_labels, test_images, test_labels) = load_dataset::load_mnist()?;
 
     // get the labels from the dataset
     let train_labels = train_labels
@@ -24,7 +24,7 @@ pub fn setup_training() -> anyhow::Result<(Mlp, VarMap)> {
     let test_images = test_images.to_device(&dev)?;
 
     // create a new variable store
-    let varmap = VarMap::new();
+    let mut varmap = VarMap::new();
     // create a new variable builder
     let vs = VarBuilder::from_varmap(&varmap, DATATYPE, &dev);
 
@@ -36,5 +36,7 @@ pub fn setup_training() -> anyhow::Result<(Mlp, VarMap)> {
     };
     // create model from variables
     let model = Mlp::new(vs.clone(), setup)?;
+
+    varmap.load("alz_weights.st")?;
     Ok((model, varmap))
 }

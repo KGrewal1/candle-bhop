@@ -20,6 +20,7 @@ anyhow = "1.0.75"
 parquet = "50.0.0"
 hf-hub = "0.3.2"
 image = "0.24.7"
+clap = { version = "4.5.1", features = ["derive"] }
 
 [features]
 default = []
