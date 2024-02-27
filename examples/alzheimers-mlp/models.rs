@@ -14,7 +14,7 @@ pub struct Mlp {
     ln1: Linear,
     ln2: Linear,
     ln3: Linear,
-    ln4: Linear,
+    // ln4: Linear,
     train_data: Tensor,
     train_labels: Tensor,
     test_data: Tensor,
@@ -31,13 +31,13 @@ pub struct MySetupVars {
 impl SimpleModel for Mlp {
     type SetupVars = MySetupVars;
     fn new(vs: VarBuilder, setup: MySetupVars) -> Result<Self> {
-        let conv1 = candle_nn::conv2d(1, 4, 3, Default::default(), vs.pp("conv1"))?;
-        let conv2 = candle_nn::conv2d(4, 4, 3, Default::default(), vs.pp("conv2"))?;
-        let conv3 = candle_nn::conv2d(4, 8, 3, Default::default(), vs.pp("conv3"))?;
-        let ln1 = candle_nn::linear(1568, 512, vs.pp("ln1"))?;
-        let ln2 = candle_nn::linear(512, 128, vs.pp("ln2"))?;
-        let ln3 = candle_nn::linear(128, 16, vs.pp("ln3"))?;
-        let ln4 = candle_nn::linear(16, LABELS, vs.pp("ln4"))?;
+        let conv1 = candle_nn::conv2d(1, 2, 5, Default::default(), vs.pp("conv1"))?;
+        let conv2 = candle_nn::conv2d(2, 2, 5, Default::default(), vs.pp("conv2"))?;
+        let conv3 = candle_nn::conv2d(2, 2, 5, Default::default(), vs.pp("conv3"))?;
+        let ln1 = candle_nn::linear(128, 128, vs.pp("ln1"))?;
+        let ln2 = candle_nn::linear(128, 128, vs.pp("ln2"))?;
+        let ln3 = candle_nn::linear(128, LABELS, vs.pp("ln3"))?;
+        // let ln4 = candle_nn::linear(16, LABELS, vs.pp("ln4"))?;
         Ok(Self {
             conv1,
             conv2,
@@ -45,7 +45,7 @@ impl SimpleModel for Mlp {
             ln1,
             ln2,
             ln3,
-            ln4,
+            // ln4,
             train_data: setup.train_data,
             train_labels: setup.train_labels,
             test_data: setup.test_data,
@@ -87,11 +87,14 @@ impl Mlp {
             .apply(&self.conv2)?
             .max_pool2d(2)?
             .apply(&self.conv3)?
-            .max_pool2d(2)?
-            .reshape((b_sz, 1568))?
+            .max_pool2d(3)?
+            // .reshape((b_sz, 1152))?
+            .flatten_from(1)?
             .apply(&self.ln1)?
+            .gelu()?
             .apply(&self.ln2)?
-            .apply(&self.ln3)?
-            .apply(&self.ln4)
+            .gelu()?
+            .apply(&self.ln3)
+        // .apply(&self.ln4)
     }
 }

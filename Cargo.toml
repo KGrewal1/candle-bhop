@@ -13,7 +13,6 @@ optimisers = { package = "candle-optimisers", version = "0.3.2"}
 rand = "0.8.5"
 rand_xoshiro = "0.6.0"
 log = "0.4.20"
-env_logger = "0.11.0"
 
 [dev-dependencies]
 anyhow = "1.0.75"
@@ -21,14 +20,18 @@ parquet = "50.0.0"
 hf-hub = "0.3.2"
 image = "0.24.7"
 clap = { version = "4.5.1", features = ["derive"] }
+candle-datasets = "0.3.3"
+env_logger = "0.11.0"
+
 
 [features]
 default = []
 cuda = ["candle-core/cuda", "candle-nn/cuda", "optimisers/cuda"]
-
+cudnn = ["cuda", "candle-core/cudnn"]
 [profile.release]
 lto = true # maximal LTO optimisaiton
 codegen-units = 1 # would optimise code further but slow to compile
+
 
 [workspace.lints.clippy]
 pedantic = "warn"

@@ -23,8 +23,8 @@ fn main() -> Result<()> {
     // let m = load_data().context("Failed to load data")?;
 
     let (model, varmap) = setup_lbfgs_training()?;
-    let l2_reg = Some(5e-9);
-    let temperature = 1.;
+    let l2_reg = Some(1e-5);
+    let temperature = 0.05;
     let pert_range = 1.;
     let lbfgs_steps = 200_000;
 
@@ -45,7 +45,7 @@ fn main() -> Result<()> {
 
     for name in &names {
         for name2 in &names {
-            perturbed_misclassification(name, name2, "new_weights")?;
+            perturbed_misclassification(name, name2, "mlp_weights")?;
         }
     }
 
