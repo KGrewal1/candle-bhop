@@ -7,9 +7,9 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.75"
-candle-core = {version = "0.3.2"}
-candle-nn = {version = "0.3.2"}
-optimisers = { package = "candle-optimisers", version = "0.3.2"}
+candle-core = {version = "0.4"}
+candle-nn = {version = "0.4"}
+optimisers = { package = "candle-optimisers", version = "0.4"}
 rand = "0.8.5"
 rand_xoshiro = "0.6.0"
 log = "0.4.20"
@@ -20,7 +20,7 @@ parquet = "50.0.0"
 hf-hub = "0.3.2"
 image = "0.24.7"
 clap = { version = "4.5.1", features = ["derive"] }
-candle-datasets = "0.3.3"
+candle-datasets = "0.4"
 env_logger = "0.11.0"
 
 
